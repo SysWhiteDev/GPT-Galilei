@@ -16,6 +16,7 @@ type ChatLogType = {
 
 export default function Home() {
   const chatBottom = useRef<any>();
+  const textContextInput = useRef<any>();
   const [chatInput, setChatInput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [context, setContext] = useState<{
@@ -86,7 +87,10 @@ export default function Home() {
   };
 
   const handleKeyDown = (e: any) => {
-    if (e.key === "Enter") {
+    if (
+      e.key === "Enter" &&
+      (textContextInput.current !== document.activeElement || e.shiftKey)
+    ) {
       e.preventDefault();
       sendMessage();
     }
@@ -142,6 +146,7 @@ export default function Home() {
               </span>
               <textarea
                 value={context.text}
+                ref={textContextInput}
                 onChange={(e) => {
                   setContext({ ...context, text: e.target.value });
                 }}
