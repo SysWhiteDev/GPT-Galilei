@@ -1,7 +1,13 @@
 services:
   frontend:
-    build: 
+    build:
       context: ./galilei-pt
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+  backend:
+    build:
+      context: .
+      dockerfile: src/Dockerfile
+    ports:
+      - "3001:3001"
