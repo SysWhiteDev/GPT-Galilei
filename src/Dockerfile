@@ -11,5 +11,7 @@ RUN pip3 install -r requirements.txt
 ## copy the source
 COPY src .
 
+EXPOSE 8000
+
 ## set the default run command
 CMD [ "fastapi", "run", "index.py" ]
