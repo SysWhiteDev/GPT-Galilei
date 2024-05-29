@@ -1,11 +1,10 @@
 
-import os
 from enum import Enum
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 import argparse
 import time
-import sys
+import os
 
 from langchain.schema import StrOutputParser
 from langchain.prompts import ChatPromptTemplate
@@ -54,99 +53,116 @@ class ContextModel:
 def log(msg: str) -> None:
     print("\x1b[93m" + msg + "\033[0m")
 
-def ask(model: ContextModel, question: str, pretty: bool = False) -> None:
-    print(f"\033[32;1m{question}\033[0m: ", end="", flush=True)
+def ask(model: ContextModel, question: str, pretty: bool = False) -> str:
+
+    if pretty:
+        print(f"\033[32;1m{question}\033[0m: ", end="", flush=True)
 
     response = model.ask(question)
 
     if not pretty:
-        print(response)
-        return
+        return response
 
     for c in response:
         print(c, end="", flush=True)
-        time.sleep(0.05)
+        time.sleep(0.01)
 
     print()
 
-parser = argparse.ArgumentParser("langchain-gpt")
+    return response
 
-parser.add_argument("questions", nargs="*", help="questions to ask")
+def main(api_key: str | None, model: str, temperature: float, dry_mode: bool,
+         ctx_files: list[str], ctx_pfds: list[str], ctx_urls: list[str],
+         ctx_texts: list[str], use_google: bool, questions: list[str]) -> str | None:
 
-parser.add_argument("-t", "--temperature", type=float, help="set the temperature value", default=0.0)
-parser.add_argument("-m", "--model", help="set the model name", default="gpt-3.5-turbo")
-parser.add_argument("--url", metavar="URL", action="append", help="use the informations found in this url to answer the questions", default=[])
-parser.add_argument("--pdf", metavar="FILE", action="append", help="use the informations found in this pdf to answer the questions", default=[])
-parser.add_argument("--raw", metavar="TEXT", action="append", help="use this informations to answer the questions", default=[])
-parser.add_argument("--load", metavar="FILE", action="append", help="load the sources from a json file", default=[])
-# parser.add_argument("--context", metavar="CTX", action="append", help="use this information to answer the questions", default=[])
-parser.add_argument("--google", action="store_true", help="use the google search engine to search informations")
-parser.add_argument("-d", "--dry-run", action="store_true", help="do not connect to ChatGPT and avoid using tokens")
-# parser.add_argument("-i", "--interactive", action="store_true", help="run in interactive mode")
+    base_model = ChatOpenAI(model       = model,
+                            temperature = temperature,
+                            api_key     = api_key) # type: ignore
 
-args = parser.parse_args()
+    ctx_model = ContextModel(base_model = base_model,
+                             dry_mode   = dry_mode)
 
-load_dotenv()
+    for file in ctx_files:
+        log(f"Loading context from file {file} ...")
 
-KEY = os.getenv("API_KEY")
+        for ctx in get_context_from_file(file):
 
-if KEY is None:
-    raise Exception("API_KEY variable not found!")
+            if ctx:
+                ctx_model.add_context(ctx)
 
-base_model = ChatOpenAI(model       = args.model,
-                        temperature = args.temperature,
-                        api_key     = KEY) # type: ignore
+    for url in ctx_urls:
+        log(f"Loading context from url {url} ...")
 
-model = ContextModel(base_model = base_model,
-                     dry_mode   = args.dry_run)
+        if ctx := get_context_from_url(url):
+            ctx_model.add_context(ctx)
 
-for file in args.load:
-    log(f"Loading context from file {file} ...")
+    for pdf in ctx_pfds:
+        log(f"Loading context from pdf {pdf} ...")
 
-    for ctx in get_context_from_file(file):
+        if ctx := get_context_from_pdf(pdf):
+            ctx_model.add_context(ctx)
 
-        if ctx:
-            model.add_context(ctx)
+    for text in ctx_texts:
+        ctx_model.add_context(text)
 
-for url in args.url:
-#    log(f"Loading context from url {url} ...")
+    if use_google:
 
-    if ctx := get_context_from_url(url):
-        model.add_context(ctx)
+        for question in questions:
+            log(f"Searching '{question}' ...")
 
-for pdf in args.pdf:
-    log(f"Loading context from pdf {pdf} ...")
+            query = ctx_model.ask_without_contexts(websearch.create_partial_query(question)).replace("site:google.com", "") # avoid google results
 
-    if ctx := get_context_from_pdf(pdf):
-        model.add_context(ctx)
+            log(f"Using query '{query}' ...")
 
-for text in args.raw:
-    model.add_context(text)
+            for url in websearch.search(query): # FIXME
+                log(f"Loading context from url {url} ...")
+                ctx_model.add_context(get_context_from_url(url) or "")
 
-if args.google:
+    if not questions:
+        while question := input("> "):
+            ask(ctx_model, question, True)
 
-    for question in args.questions:
-        log(f"Searching '{question}' ...")
+        return None
 
-        query = model.ask_without_contexts(websearch.create_partial_query(question)).replace("site:google.com", "") # avoid google results
+    try:
+        return "\n\n".join(ask(ctx_model, question) for question in questions)
+    except Exception as err:
+        print(err)
+        return None
 
-        log(f"Using query '{query}' ...")
+if __name__ == "__main__":
 
-        for url in websearch.search(query): # FIXME
-            log(f"Loading context from url {url} ...")
-            model.add_context(get_context_from_url(url) or "")
+    ## parse the command-line arguments
+    parser = argparse.ArgumentParser("langchain-gpt")
 
-if not args.questions:
-    while question := input("> "):
-        ask(model, question, True)
+    parser.add_argument("questions", nargs="*", help="questions to ask")
+    parser.add_argument("-t", "--temperature", type=float, help="set the temperature value", default=0.0)
+    parser.add_argument("-m", "--model", help="set the model name", default="gpt-3.5-turbo")
+    parser.add_argument("--url", metavar="URL", action="append", help="use the informations found in this url to answer the questions", default=[])
+    parser.add_argument("--pdf", metavar="FILE", action="append", help="use the informations found in this pdf to answer the questions", default=[])
+    parser.add_argument("--raw", metavar="TEXT", action="append", help="use this informations to answer the questions", default=[])
+    parser.add_argument("--load", metavar="FILE", action="append", help="load the sources from a json file", default=[])
+    parser.add_argument("--google", action="store_true", help="use the google search engine to search informations")
+    parser.add_argument("-d", "--dry-run", action="store_true", help="do not connect to ChatGPT and avoid using tokens")
 
-    sys.exit(0)
+    args = parser.parse_args()
 
-for question in args.questions:
-    ask(model, question)
+    ## load the .env file
+    load_dotenv()
 
-# fixes = read_config("fixes.json")
-# with concurrent.futures.ThreadPoolExecutor() as executor:
-#     for item in fixes:
-#         # print("getting context")
-#         executor.submit(lambda: model.add_context(item_to_context(item)))
+    ## execute the main program
+    result = main(api_key     = os.getenv("API_KEY"),
+                  model       = args.model,
+                  temperature = args.temperature,
+                  dry_mode    = args.dry_run,
+                  ctx_files   = args.load,
+                  ctx_pfds    = args.pdf,
+                  ctx_urls    = args.url,
+                  ctx_texts   = args.raw,
+                  use_google  = args.google,
+                  questions   = args.questions)
+
+    ## print the answers, only when in non-interactive mode
+    if args.questions:
+        print(result)
+

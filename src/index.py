@@ -1,9 +1,9 @@
-import subprocess
+
 from fastapi import FastAPI, Query
-from typing import Optional
-import re
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Annotated
+from typing import Optional, Annotated
+
+from main import main, load_dotenv
 
 app = FastAPI()
 
@@ -17,34 +17,24 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+load_dotenv()
+
+
 @app.post("/")
-async def read_root(temp: float = 0.0, model: str = "gpt-4-turbo",urls: Annotated[list[str] | None, Query()] = None, text: str = "", question: str = "chi è il presidente della repubblica italiana?", google: Optional[bool] = False):
-    
-    command = ["python3", "main.py", "-t", str(temp), "-m", str(model), "--raw", str(text)]
-    if google:
-       command.append("--google")
-    if urls:
-        for url in urls:
-            command.append("--url")
-            command.append(url)
-    command.append("--")
-    command.append(question)
+async def read_root(temp: float = 0.0, model: str = "gpt-3.5-turbo",urls: Annotated[list[str] | None, Query()] = None, text: str = "", question: str = "chi è il presidente della repubblica italiana?", google: Optional[bool] = False):
 
+    ## call the openai api
+    answer = main(api_key     = None,
+                  model       = model,
+                  temperature = 0.0,
+                  dry_mode    = False,
+                  ctx_files   = [],
+                  ctx_pfds    = [],
+                  ctx_urls    = urls or [],
+                  ctx_texts   = [text],
+                  use_google  = bool(google),
+                  questions   = [question])
 
-    result = subprocess.run(command, 
-                            capture_output=True, text=True)
-    
-  
-    
-    stripped_output = re.sub(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])', '', result.stdout)
-    print(result)
-    answer_start = stripped_output.find(": ") + 2  
-    answer_end = stripped_output.rfind("\n")  
-    
-    if answer_start!= -1 and answer_end!= -1:
-        actual_answer = stripped_output[answer_start:answer_end].strip()
-        print(actual_answer)
-        return {"autor": "model", "text": actual_answer}
-    else:
-        print("No answer found.")
-        return None
+    return {"autor": "model", # autHor ??
+            "text":  answer}
+
