@@ -1,0 +1,10 @@
+[
+  {
+    "type": "web",
+    "source": "https://langchain.com"
+  },
+  {
+    "type": "pdf",
+    "source": "samples/WEA025664A.pdf"
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "messages": [
+    {
+      "side": "left",
+      "text": "Hello, I am Galilei. I am here to help you with your questions.",
+      "loading": false
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+
+import json
+from typing import TypedDict
+
+from get_context import get_context_from_pdf, get_context_from_url
+
+
+class Item(TypedDict):
+    type: str
+    source: str
+
+
+def item_to_context(item: Item) -> str:
+    type = item.get("type")
+    source = item.get("source")
+
+    if type is None:
+        print("WARNING: found item with no type (returning empty).")
+        return ""
+
+    if source is None:
+        print("WARNING: found item with no source (returning empty).")
+        return ""
+
+    match type:
+        case "web":
+            return get_context_from_url(source)  # type: ignore
+        case "pdf":
+            return get_context_from_pdf(source)  # type: ignore
+        case "text":
+            return source
+        case _:
+            print("WARNING: found item with invalid type (returning empty)")
+            return ""
+
+
+def read_config(filename: str) -> list[Item]:
+    with open(filename) as f:
+        raw_json = f.read()
+        prompts: list[Item] = json.loads(raw_json)
+        return prompts

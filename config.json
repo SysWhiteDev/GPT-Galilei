@@ -1,0 +1,10 @@
+{
+  "Cos'e langchain?": {
+    "source_type": "web",
+    "source": "https://langchain.com"
+  },
+  "what do you know about WEA025664A": {
+    "source_type": "pdf",
+    "source": "samples/WEA025664A.pdf"
+  }
+}

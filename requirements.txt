@@ -1,0 +1,7 @@
+requests
+bs4
+langchain
+langchain_openai
+PyPDF2
+googlesearch-python
+python-dotenv
