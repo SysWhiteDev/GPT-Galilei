@@ -6,13 +6,18 @@ type ChatBubbleProps = {
   loading?: boolean;
 };
 import "./ChatBubble.css";
-export default function ChatBubble({ children, side, loading }: ChatBubbleProps) {
+import { Skeleton } from "./ui/skeleton";
+export default function ChatBubble({
+  children,
+  side,
+  loading,
+}: ChatBubbleProps) {
   return (
     <>
       <div
         className={`${
           side === "right" ? " flex-row-reverse" : ""
-        } flex items-start gap-2.5`}
+        } flex items-start gap-2.5 pt-8`}
       >
         <div className="p-1.5 translate-y-[5px] border-border border rounded-full">
           {side === "right" ? (
@@ -34,9 +39,11 @@ export default function ChatBubble({ children, side, loading }: ChatBubbleProps)
           <span className={` font-semibold whitespace-normal text-sm`}>
             {side === "right" ? "You" : "GPT + Galilei"}
           </span>
-          <span className="w-full whitespace-break-spaces truncate">
-            {loading ? "..." : children}
-          </span>
+          {loading ? (
+            <Skeleton className="h-4 my-2 w-[100%] bg-white bg-opacity-30" />
+          ) : (
+            children
+          )}
         </div>
       </div>
     </>

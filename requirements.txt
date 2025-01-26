@@ -5,4 +5,4 @@ langchain_openai
 PyPDF2
 googlesearch-python
 python-dotenv
-fastapi
+fastapi[standard]

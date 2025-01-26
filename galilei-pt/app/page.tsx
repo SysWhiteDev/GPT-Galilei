@@ -39,7 +39,6 @@ export default function Home() {
       ...prevChatLog,
       { side: "right", text: chatInput, loading: false },
     ]);
-    chatBottom.current.scrollIntoView({ behavior: "smooth" });
     setLoading(true);
 
     setTimeout(() => {
@@ -51,7 +50,6 @@ export default function Home() {
           loading: true,
         },
       ]);
-      chatBottom.current.scrollIntoView({ behavior: "smooth" });
       requestResponse(chatInput).then(async (response) => {
         setChatInput("");
         setChatLog((prevChatLog) => [
@@ -62,7 +60,6 @@ export default function Home() {
             loading: false,
           },
         ]);
-        chatBottom.current.scrollIntoView({ behavior: "smooth" });
         setLoading(false);
       });
     }, 800);
@@ -82,7 +79,6 @@ export default function Home() {
         "Content-Type": "application/json",
       },
     });
-
     return await response.json();
   };
 
@@ -118,6 +114,9 @@ export default function Home() {
       ]);
     }
   }, []);
+  useEffect(() => {
+    chatBottom.current.scrollIntoView({ behavior: "smooth" });
+  }, [chatLog]);
 
   return (
     <main className="flex  text-text h-dvh overflow-hidden gap-1">
@@ -207,7 +206,7 @@ export default function Home() {
               </div>
             </div>
           )}
-          <div className="flex-shrink-0 z-0  px-5 pr-2 py-2   flex items-center h-[56px] w-full">
+          <div className="flex-shrink-0 z-0 px-5 pr-2 py-2 flex items-center h-[56px] w-full">
             <div className="flex  min-w-0 flex-1 flex-col">
               <input
                 type="text"
@@ -228,9 +227,9 @@ export default function Home() {
                 onClick={() => setIsContextDialogOpen(!isContextDialogOpen)}
                 className={`${
                   isContextDialogOpen
-                    ? "bg-accent bg-opacity-25"
-                    : "hover:bg-accent hover:bg-opacity-25"
-                } transition-all hover:bg-accent hover:bg-opacity-25 h-[40px] w-[40px] flex items-center justify-center rounded-md`}
+                    ? "bg-accent bg-opacity-20"
+                    : "hover:bg-accent hover:bg-opacity-10"
+                } transition-all h-[40px] w-[40px] flex items-center justify-center rounded-md`}
               >
                 <LuFileStack size={20} />
               </button>

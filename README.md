@@ -25,7 +25,7 @@ There are 2 main ways to use this project: [CLI](#cli) and [Frontend](#frontend)
 Install dependencies:
 
 ```bash
-pip install -r ./requirements
+pip install -r ./requirements.txt
 cd ./galilei-pt
 npm -ci install
 ```

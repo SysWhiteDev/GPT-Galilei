@@ -21,7 +21,7 @@ load_dotenv()
 
 
 @app.post("/")
-async def read_root(temp: float = 0.0, model: str = "gpt-3.5-turbo",urls: Annotated[list[str] | None, Query()] = None, text: str = "", question: str = "chi è il presidente della repubblica italiana?", google: Optional[bool] = False):
+async def read_root(temp: float = 0.0, model: str = "gpt-3.5-turbo-1106",urls: Annotated[list[str] | None, Query()] = None, text: str = "", question: str = "chi è il presidente della repubblica italiana?", google: Optional[bool] = False):
 
     ## call the openai api
     answer = main(api_key     = None,

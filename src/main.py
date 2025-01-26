@@ -114,9 +114,10 @@ def main(api_key: str | None, model: str, temperature: float, dry_mode: bool,
 
             log(f"Using query '{query}' ...")
 
-            for url in websearch.search(query): # FIXME
-                log(f"Loading context from url {url} ...")
-                ctx_model.add_context(get_context_from_url(url) or "")
+            for url in websearch.search(query):
+                if (url):
+                    log(f"Loading context from url {url} ...")
+                    ctx_model.add_context(get_context_from_url(url) or "")
 
     if not questions:
         while question := input("> "):
@@ -137,7 +138,7 @@ if __name__ == "__main__":
 
     parser.add_argument("questions", nargs="*", help="questions to ask")
     parser.add_argument("-t", "--temperature", type=float, help="set the temperature value", default=0.0)
-    parser.add_argument("-m", "--model", help="set the model name", default="gpt-3.5-turbo")
+    parser.add_argument("-m", "--model", help="set the model name", default="gpt-3.5-turbo-1106")
     parser.add_argument("--url", metavar="URL", action="append", help="use the informations found in this url to answer the questions", default=[])
     parser.add_argument("--pdf", metavar="FILE", action="append", help="use the informations found in this pdf to answer the questions", default=[])
     parser.add_argument("--raw", metavar="TEXT", action="append", help="use this informations to answer the questions", default=[])

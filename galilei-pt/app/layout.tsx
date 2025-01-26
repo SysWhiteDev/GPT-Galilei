@@ -36,28 +36,6 @@ export default function RootLayout({
               >
                 <p>App showcase</p>
               </Link>
-
-              <span className="text-sm mt-8 font-bold">
-                Found hallucinations
-              </span>
-              <Link
-                href={"/"}
-                className="w-full mt-2 text-sm hover:bg-secondary hover:bg-opacity-10 px-3 py-2.5 rounded-lg"
-              >
-                <p>Allucinazione nr.1</p>
-              </Link>
-              <Link
-                href={"/"}
-                className="w-full mt-2 text-sm hover:bg-secondary hover:bg-opacity-10 px-3 py-2.5 rounded-lg"
-              >
-                <p>Allucinazione nr.2</p>
-              </Link>
-              <Link
-                href={"/"}
-                className="w-full mt-2 text-sm hover:bg-secondary hover:bg-opacity-10 px-3 py-2.5 rounded-lg"
-              >
-                <p>Allucinazione nr.3</p>
-              </Link>
             </div>
             <div className="w-full">{children}</div>
           </main>
