@@ -71,13 +71,12 @@ def ask(model: ContextModel, question: str, pretty: bool = False) -> str:
 
     return response
 
-def main(api_key: str | None, model: str, temperature: float, dry_mode: bool,
+def main(model: str, temperature: float, dry_mode: bool,
          ctx_files: list[str], ctx_pfds: list[str], ctx_urls: list[str],
          ctx_texts: list[str], use_google: bool, questions: list[str]) -> str | None:
 
     base_model = ChatOpenAI(model       = model,
-                            temperature = temperature,
-                            api_key     = api_key) # type: ignore
+                            temperature = temperature)
 
     ctx_model = ContextModel(base_model = base_model,
                              dry_mode   = dry_mode)
@@ -91,6 +90,10 @@ def main(api_key: str | None, model: str, temperature: float, dry_mode: bool,
                 ctx_model.add_context(ctx)
 
     for url in ctx_urls:
+
+        if not url:
+            continue # FIXME: why a user passed a empty URL ??
+
         log(f"Loading context from url {url} ...")
 
         if ctx := get_context_from_url(url):
@@ -152,8 +155,7 @@ if __name__ == "__main__":
     load_dotenv()
 
     ## execute the main program
-    result = main(api_key     = os.getenv("API_KEY"),
-                  model       = args.model,
+    result = main(model       = args.model,
                   temperature = args.temperature,
                   dry_mode    = args.dry_run,
                   ctx_files   = args.load,

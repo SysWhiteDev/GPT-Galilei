@@ -24,9 +24,8 @@ load_dotenv()
 async def read_root(temp: float = 0.0, model: str = "gpt-3.5-turbo-1106",urls: Annotated[list[str] | None, Query()] = None, text: str = "", question: str = "chi è il presidente della repubblica italiana?", google: Optional[bool] = False):
 
     ## call the openai api
-    answer = main(api_key     = None,
-                  model       = model,
-                  temperature = 0.0,
+    answer = main(model       = model,
+                  temperature = temp,
                   dry_mode    = False,
                   ctx_files   = [],
                   ctx_pfds    = [],
@@ -35,6 +34,6 @@ async def read_root(temp: float = 0.0, model: str = "gpt-3.5-turbo-1106",urls: A
                   use_google  = bool(google),
                   questions   = [question])
 
-    return {"autor": "model", # autHor ??
+    return {"autor": "model", # author ??
             "text":  answer}
 
